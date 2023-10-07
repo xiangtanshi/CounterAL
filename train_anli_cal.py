@@ -11,6 +11,11 @@ from utils.tools import *
 from utils.loss_nli import *
 from utils.strategy_fast import CALSampling, KMeansSampling
 from utils.strategy import BadgeSampling,RamdomSampling
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+import warnings
+warnings.filterwarnings('ignore')
+
 
 def get_args():
     """set up hyper parameters here"""
@@ -161,8 +166,8 @@ class ANLI_AL:
                 optimizer.zero_grad()
                 encoding = self.tokenizer(L_batch[index][1],padding=True,truncation=True,max_length=512,return_tensors='pt')
 
-                # if l_acc < 0.9:
-                if l_acc < 1:
+                if l_acc < 0.9:
+                # if l_acc < 1:
                     #standard way
                     outputs = self.model(encoding["input_ids"].to(self.device),encoding["attention_mask"].to(self.device))
                     labels = L_batch[index][0].to(self.device)

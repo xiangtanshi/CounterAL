@@ -11,6 +11,11 @@ from utils.tools import *
 from utils.loss_nli import *
 from utils.strategy import BadgeSampling,RamdomSampling
 from utils.strategy_fast import CALSampling, KMeansSampling
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+import warnings
+warnings.filterwarnings('ignore')
+
 
 def get_args():
     """set up hyper parameters here"""
@@ -27,7 +32,7 @@ def get_args():
 
     parser.add_argument('--size',type=int,default=16,help='the number of samples we query each time')
     parser.add_argument('--total',default=10,type=int,help='the total number of query rounds')
-    parser.add_argument('--epoch',type=int,default=20)
+    parser.add_argument('--epoch',type=int,default=15)
     parser.add_argument('--lr',type=float,default=1e-5)
     parser.add_argument('--batchsize',type=int,default=2)
     parser.add_argument('--task',default='nli')
@@ -161,8 +166,8 @@ class NLI_AL:
                 optimizer.zero_grad()
                 encoding = self.tokenizer(L_batch[index][1],padding=True,truncation=True,max_length=512,return_tensors='pt')
 
-                # if l_acc < 0.8:
-                if l_acc < 1:
+                if l_acc < 0.9:
+                # if l_acc < 1:
                     #standard way
                     outputs = self.model(encoding["input_ids"].to(self.device),encoding["attention_mask"].to(self.device))
                     labels = L_batch[index][0].to(self.device)
@@ -171,7 +176,7 @@ class NLI_AL:
                 else:
                     embedding = self.model.roberta(encoding['input_ids'].to(self.device), encoding['attention_mask'].to(self.device)).last_hidden_state[:,:1,:]
                     label = L_batch[index][0]
-                    loss = loss_mask(self.model, embedding, label, self.device, threshold=0.1)
+                    loss = loss_mask(self.model, embedding, label, self.device, threshold=0.05)
                     loss.backward()
 
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(),1,norm_type=2)
@@ -310,8 +315,7 @@ class NLI_AL:
                 q_idx = self.CounterALSampling(candidates, trains)
                 # q_idx = CALSampling(self.tokenizer, self.model, l_indexs, candidates, trains, self.qsize, self.device, self.train_hyp_all)
                 # q_idx = BadgeSampling(self.tokenizer, self.model, l_indexs, candidates, trains, self.qsize, self.device)
-                if r == 0:
-                    l_indexs = []
+                
                 for item in range(self.qsize):
                     l_indexs.append(q_idx[item])
                     un_indexs.remove(q_idx[item])

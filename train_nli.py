@@ -9,10 +9,12 @@ import copy
 from utils.dataload import dataset
 from utils.tools import *
 from utils.loss_nli import *
-from utils.strategy import *
-# from utils.strategy_fast import *
-# import os
-# os.environ["TOKENIZERS_PARALLELISM"] = "false"
+from utils.strategy_fast import *
+from utils.strategy import BadgeSampling
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+import warnings
+warnings.filterwarnings('ignore')
 
 
 def get_args():
@@ -30,7 +32,7 @@ def get_args():
 
     parser.add_argument('--size',type=int,default=48,help='the number of samples we query each time')
     parser.add_argument('--total',default=10,type=int,help='the total number of query rounds')
-    parser.add_argument('--epoch',type=int,default=10)
+    parser.add_argument('--epoch',type=int,default=15)
     parser.add_argument('--lr',type=float,default=1e-5)
     parser.add_argument('--batchsize',type=int,default=4)
     parser.add_argument('--task',default='nli')

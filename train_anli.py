@@ -11,6 +11,10 @@ from utils.tools import *
 from utils.loss_nli import *
 from utils.strategy import BadgeSampling
 from utils.strategy_fast import *
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+import warnings
+warnings.filterwarnings('ignore')
 
 def get_args():
     """set up hyper parameters here"""
@@ -27,7 +31,7 @@ def get_args():
 
     parser.add_argument('--size',type=int,default=96,help='the number of samples we query each time')
     parser.add_argument('--total',default=10,type=int,help='the total number of query rounds')
-    parser.add_argument('--epoch',type=int,default=10)
+    parser.add_argument('--epoch',type=int,default=15)
     parser.add_argument('--lr',type=float,default=1e-5)
     parser.add_argument('--batchsize',type=int,default=4)
     parser.add_argument('--task',default='anli')
@@ -324,14 +328,14 @@ class ANLI_AL:
                 acc2 = self.test(test_large_batch)
                 acc3 = self.test(test_ood_batch)
                 
-                acc4 = self.test(AT)
-                acc5 = self.test(LN)
-                acc6 = self.test(NG)
-                acc7 = self.test(NR)
-                acc8 = self.test(SE)
-                acc9 = self.test(WO)
+                # acc4 = self.test(AT)
+                # acc5 = self.test(LN)
+                # acc6 = self.test(NG)
+                # acc7 = self.test(NR)
+                # acc8 = self.test(SE)
+                # acc9 = self.test(WO)
                 print('epoch:{},ave loss:{},train acc:{:.4f},test acc:{:.4f},test ood acc:{:.4f}'.format(str(i),loss_total/len(train_batch),acc1,acc2,acc3))
-                print('AT:{:.4f},LN:{:.4f},NG:{:.4f},NR:{:.4f},SE:{:.4f},WO:{:.4f}'.format(acc4,acc5,acc6,acc7,acc8,acc9))
+                # print('AT:{:.4f},LN:{:.4f},NG:{:.4f},NR:{:.4f},SE:{:.4f},WO:{:.4f}'.format(acc4,acc5,acc6,acc7,acc8,acc9))
 
     def formal_train(self):
         init_seed(self.seed)
@@ -397,7 +401,7 @@ class ANLI_AL:
                 
 def main():
     args = get_args()
-    agent = NLI_AL(args)
+    agent = ANLI_AL(args)
 
     if args.op == 'al':
         agent.AL_train()

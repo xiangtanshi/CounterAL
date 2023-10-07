@@ -9,8 +9,11 @@ import copy
 from utils.dataload import dataset
 from utils.tools import *
 from utils.loss_sa import *
-from utils.strategy import BadgeSampling,RamdomSampling
-from utils.strategy_fast import CALSampling, KMeansSampling
+from utils.strategy import *
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+import warnings
+warnings.filterwarnings('ignore')
 
 def get_args():
     """set up hyper parameters here"""
@@ -188,7 +191,7 @@ class SA_AL:
                             self.confidence[un_indexs[c+j]].append(probs[j])
                         c += num
 
-    def sa_train_start(self, indexs, un_indexs, batchsize=4):
+    def sa_train_start(self, loader, indexs, un_indexs, batchsize=4):
         # train the model on the newly augmented labeled set
         self.model.train()
         optimizer_grouped_parameters = [
@@ -204,7 +207,7 @@ class SA_AL:
         while(end == 0):
             # create different batch data for each epoch
             epoch += 1
-            L_batch = self.train_ori.get_batch(batchsize,True,indexs)
+            L_batch = loader.get_batch(batchsize,True,indexs)
             self.model.train()
             for index in range(len(L_batch)):
 
@@ -275,8 +278,8 @@ class SA_AL:
             candidates = un_indexs
             # query
             if r < 0:
-                q_idx = RamdomSampling(self.tokenizer, self.model, l_indexs, candidates, trains, 20, self.device)
-                for item in range(20):
+                q_idx = RamdomSampling(self.tokenizer, self.model, l_indexs, candidates, trains, self.qsize, self.device)
+                for item in range(self.qsize):
                     l_indexs.append(q_idx[item])
                     un_indexs.remove(q_idx[item])
             else:
@@ -289,7 +292,7 @@ class SA_AL:
 
             # update
             if r == -1:
-                self.sa_train_start(l_indexs, un_indexs)
+                self.sa_train_start(trains, l_indexs, un_indexs, batchsize=self.batchsize)
             else:
                 self.sa_train(trains, self.batchsize, l_indexs, un_indexs)
 

@@ -9,9 +9,12 @@ import copy
 from utils.dataload import dataset
 from utils.tools import *
 from utils.loss_sa import *
-from utils.strategy import *
+from utils.strategy_fast import *
+from utils.strategy import BadgeSampling
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+import warnings
+warnings.filterwarnings('ignore')
 
 
 def get_args():
