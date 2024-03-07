@@ -17,7 +17,7 @@ Meaning of the hyperparameters:
 
 Downloading the pretrained Roberta models from Huggingface ahead of the training:
 ```
-cd model
+cd utils
 python model.py
 ```
 
